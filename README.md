@@ -248,30 +248,6 @@ I kept the code linear and straightforward:
 - Simple to modify or debug
 - Direct flow from step 1 to completion
 
-## Troubleshooting
-
-### "ChromeDriver not found"
-**Solution**: Update Selenium to version 4.x which auto-manages ChromeDriver:
-```bash
-pip install --upgrade selenium
-```
-
-### Test times out
-**Solution**: Increase the wait time in the code:
-```python
-wait = WebDriverWait(driver, 20)  # Changed from 10 to 20 seconds
-```
-
-### "Module not found"
-**Solution**: Make sure you activated the virtual environment and installed dependencies:
-```bash
-# Activate venv first, then:
-pip install -r requirements.txt
-```
-
-### Chrome not found
-**Solution**: Install Google Chrome browser from [google.com/chrome](https://www.google.com/chrome/)
-
 ## Dependencies
 
 My solution uses:
