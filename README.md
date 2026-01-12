@@ -15,7 +15,7 @@ The assignment was to automate the following test scenario:
 
 ## My Solution
 
-I created a comprehensive test automation script that handles all the requirements, with special attention to reliable synchronization and proper error handling.
+I created a streamlined test automation script that handles all the requirements with clean, readable code focused on reliability and simplicity.
 
 ### How I Approached the Problem
 
@@ -31,17 +31,13 @@ I configured Chrome to run in headless mode right from the start to meet the bon
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--window-size=1920,1080")
-chrome_options.add_argument("--disable-gpu")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
+
+driver = webdriver.Chrome(options=chrome_options)
 ```
 
 **Why these options?**
 - `--headless`: Runs Chrome without a visible window
 - `--window-size=1920,1080`: Sets a standard viewport size for consistent screenshots
-- `--disable-gpu`: Prevents GPU-related issues in headless mode
-- `--no-sandbox`: Helps with certain CI/CD environments
-- `--disable-dev-shm-usage`: Prevents memory issues in containers
 
 #### 2. **Smart Waiting for Dynamic Content**
 
@@ -54,9 +50,7 @@ wait = WebDriverWait(driver, 10)
 wait.until(EC.invisibility_of_element_located((By.ID, "loading")))
 
 # Then, wait for the "Hello World!" text to appear
-hello_text_element = wait.until(
-    EC.visibility_of_element_located((By.CSS_SELECTOR, "#finish h4"))
-)
+hello_element = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#finish h4")))
 ```
 
 **Why this approach?**
@@ -70,10 +64,8 @@ hello_text_element = wait.until(
 I used CSS selectors to find elements accurately:
 
 ```python
-start_button = driver.find_element(By.CSS_SELECTOR, "#start button")
-hello_text_element = wait.until(
-    EC.visibility_of_element_located((By.CSS_SELECTOR, "#finish h4"))
-)
+driver.find_element(By.CSS_SELECTOR, "#start button").click()
+hello_element = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#finish h4")))
 ```
 
 **My selector choices:**
@@ -87,13 +79,9 @@ These selectors are specific enough to be reliable but not so rigid that small p
 I implemented two levels of verification as required:
 
 ```python
-# Check the text matches exactly
-actual_text = hello_text_element.text
-expected_text = "Hello World!"
-assert actual_text == expected_text, f"Expected '{expected_text}', but got '{actual_text}'"
-
-# Verify the element is actually visible
-assert hello_text_element.is_displayed(), "Element is not visible!"
+actual_text = hello_element.text
+assert actual_text == "Hello World!", f"Expected 'Hello World!', got '{actual_text}'"
+assert hello_element.is_displayed()
 ```
 
 This ensures not only that the element exists, but that it contains the correct text and is actually visible to users.
@@ -103,47 +91,25 @@ This ensures not only that the element exists, but that it contains the correct 
 For the bonus requirement, I implemented automatic screenshot capture:
 
 ```python
-# Create screenshots directory if needed
-if not os.path.exists("screenshots"):
-    os.makedirs("screenshots")
-
-screenshot_path = "dynamic_loading_result.png"
-driver.save_screenshot(screenshot_path)
+driver.save_screenshot("dynamic_loading_result.png")
 ```
 
 Even though the browser runs in headless mode (invisible), it still captures what would be displayed, giving us visual proof the test passed.
 
-#### 6. **Error Handling and Debugging**
+#### 6. **Clear Console Output**
 
-I added robust error handling to make troubleshooting easier:
-
-```python
-try:
-    # Main test logic here
-    ...
-except Exception as e:
-    print(f"Error: {str(e)}")
-    # Capture screenshot on failure for debugging
-    driver.save_screenshot("error_screenshot.png")
-    raise
-finally:
-    # Always close the browser
-    driver.quit()
-```
-
-If something goes wrong, the test captures a screenshot of the error state and still cleans up properly.
-
-#### 7. **Clear Console Output**
-
-I added detailed logging so anyone running the test can see exactly what's happening:
+I added simple logging so anyone running the test can see exactly what's happening:
 
 ```python
-print("✓ Start button clicked successfully")
-print("✓ Loading bar has disappeared")
-print("✓ 'Hello World!' text element is now visible")
+print("Step 1: Clicking Start button")
+print("Step 2: Waiting for loading")
+print("Step 3: Verifying text...")
+print("Text verified: 'Hello World!'")
+print("Step 4: Capturing screenshot")
+print("Screenshot saved")
 ```
 
-This makes the test self-documenting and easier to debug.
+This makes the test self-documenting and easier to follow.
 
 ## Prerequisites
 
@@ -158,11 +124,10 @@ To run this solution, you need:
 ```
 selenium-dynamic-loading-test/
 │
-├── test_dynamic_loading.py    # My test automation script
-├── requirements.txt            # Python dependencies
-
-README.md            
-
+├── test_dynamic_loading.py       # My test automation script
+├── requirements.txt               # Python dependencies
+├── dynamic_loading_result.png     # Screenshot (generated after test run)
+└── README.md                      # This file
 ```
 
 ## Installation & Setup
@@ -211,57 +176,32 @@ python test_dynamic_loading.py
 When the test runs successfully, you'll see:
 
 ```
-🚀 Starting Dynamic Loading Test Automation
+Step 1: Clicking Start button
+Step 2: Waiting for loading
+Step 3: Verifying text
+Text verified: 'Hello World!'
+Step 4: Capturing screenshot
+Screenshot saved
 
-Navigating to: https://the-internet.herokuapp.com/dynamic_loading/1
-
-============================================================
-TASK 2: Dynamic Loading Test
-============================================================
-
-Step 1: Clicking the 'Start' button...
-✓ Start button clicked successfully
-
-Step 2: Waiting for loading bar to disappear and 'Hello World!' to appear...
-✓ Loading bar has disappeared
-✓ 'Hello World!' text element is now visible
-
-Step 3: Asserting the text is visible and matches exactly...
-✓ Text assertion passed! Text is: 'Hello World!'
-✓ Element visibility verified!
-
-------------------------------------------------------------
-BONUS STEP: Capturing screenshot in headless mode...
-------------------------------------------------------------
-✓ Screenshot saved as 'dynamic_loading_result.png'
-
-============================================================
-✅ TEST PASSED - All assertions successful!
-============================================================
-
-Closing browser...
-✓ Browser closed successfully
-
-✅ Test execution completed!
+Test Passed!
 ```
 
 ### Screenshot Output
 
 After running, you'll find:
 - **`dynamic_loading_result.png`** - Screenshot showing the "Hello World!" message (proof the test passed in headless mode)
-- **`error_screenshot.png`** - Only created if the test fails (for debugging)
 
 ## What My Solution Validates
 
 My test performs these checks:
 
-✅ **Navigation** - Successfully loads the target page  
-✅ **Interaction** - Start button can be clicked  
-✅ **Wait Handling** - Properly waits for loading animation to disappear  
-✅ **Content Verification** - "Hello World!" text appears after loading  
-✅ **Exact Match** - Text matches exactly "Hello World!" (case-sensitive)  
-✅ **Visibility Check** - Element is actually visible on the page  
-✅ **Screenshot Capture** - Works correctly in headless mode  
+ **Navigation** - Successfully loads the target page  
+ **Interaction** - Start button can be clicked  
+ **Wait Handling** - Properly waits for loading animation to disappear  
+ **Content Verification** - "Hello World!" text appears after loading  
+ **Exact Match** - Text matches exactly "Hello World!" (case-sensitive)  
+ **Visibility Check** - Element is actually visible on the page  
+ **Screenshot Capture** - Works correctly in headless mode  
 
 ## Technical Decisions Explained
 
@@ -300,6 +240,14 @@ Running in headless mode offers:
 - Reduced resource usage
 - Still captures screenshots for verification
 
+### Why Simple Code Structure
+
+I kept the code linear and straightforward:
+- No complex functions or classes
+- Easy to understand at a glance
+- Simple to modify or debug
+- Direct flow from step 1 to completion
+
 ## Troubleshooting
 
 ### "ChromeDriver not found"
@@ -328,6 +276,6 @@ pip install -r requirements.txt
 
 My solution uses:
 - `selenium==4.27.1` - Web automation framework
-- Supporting packages for async operations and HTTP handling
 
 See `requirements.txt` for the complete list.
+
