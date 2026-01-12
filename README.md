@@ -160,8 +160,9 @@ selenium-dynamic-loading-test/
 │
 ├── test_dynamic_loading.py    # My test automation script
 ├── requirements.txt            # Python dependencies
-├── README.md                   # This file - explaining my solution
-└── .gitignore                  # Git configuration
+
+README.md            
+
 ```
 
 ## Installation & Setup
